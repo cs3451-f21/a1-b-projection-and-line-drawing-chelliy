@@ -9,7 +9,7 @@ class MyDrawing extends Drawing {
     perspectiveM:number[][] = [];
     status:boolean|null = null;
     pointContainer:Point[]= [];
-    
+
     constructor (div: HTMLElement) {
         super(div)
         init_tests(this)
@@ -32,7 +32,6 @@ class MyDrawing extends Drawing {
     }
 
     endShape() {
-        // this.render();
         for (let index = 0; index < this.pointContainer.length; index = index + 2) {
             if (index + 2 > this.pointContainer.length) {
                 break;
@@ -70,7 +69,9 @@ class MyDrawing extends Drawing {
             point1 = {x:vector1[0][0], y:vector1[1][0], z:vector1[2][0]};
             point2 = {x:vector2[0][0], y:vector2[1][0], z:vector2[2][0]};
             this.line(point1, point2);
+            this.ctx.closePath();
         }
+        // this.render();
     }
 
     vertex(x: number, y: number, z: number) {
@@ -197,14 +198,14 @@ class MyDrawing extends Drawing {
     }
 
     multiplication(given1: number[][], given:number[][]){
-        var result:number[][] = [];
-        for (let index1 = 0; index1 < 4; index1++) {
+        var result:number[][] = [[], [], [], []];
+        for (let index1 = 0; index1 < given1.length; index1++) {
             for (let index2 = 0; index2 < given[0].length; index2++) {
 
                 var sum:number = given1[index1][0] * given[0][index2] + given1[index1][1] * given[1][index2] 
                 +given1[index1][2] * given[2][index2] +given1[index1][3] * given[3][index2];
 
-                result[index1][index2] = sum;
+                result[index1].push(sum);
             }
         }
         return result
