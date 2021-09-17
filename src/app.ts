@@ -9,6 +9,13 @@ class MyDrawing extends Drawing {
     perspectiveM:number[][] = [];
     status:boolean|null = null;
     pointContainer:Point[]= [];
+    vpM:number[][] = [
+        [this.ctx.canvas.width/2, 0, 0, (this.ctx.canvas.width - 1)/2], 
+        [0, this.ctx.canvas.height/2, 0, (this.ctx.canvas.height - 1)/2], 
+        [0, 0, 1, 0],
+        [0, 0, 0, 1]
+
+    ]
 
     constructor (div: HTMLElement) {
         super(div)
@@ -32,14 +39,21 @@ class MyDrawing extends Drawing {
     }
 
     endShape() {
-        for (let index = 0; index < this.pointContainer.length; index = index + 2) {
-            if (index + 2 > this.pointContainer.length) {
-                break;
-            }
+
+        this.vpM= [
+            [this.ctx.canvas.offsetWidth/2, 0, 0, (this.ctx.canvas.offsetWidth - 1)/2], 
+            [0, this.ctx.canvas.offsetHeight/2, 0, (this.ctx.canvas.offsetHeight - 1)/2], 
+            [0, 0, 1, 0],
+            [0, 0, 0, 1]
+    
+        ]
+
+        var steps:number = this.pointContainer.length;
+        for (let index = 0; index <steps/2; index++) {
 
             let point1:Point = this.pointContainer[0];
-            let point2:Point = this.pointContainer[1];
             this.pointContainer.shift();
+            let point2:Point = this.pointContainer[0];
             this.pointContainer.shift();
             let vector1:number[][] = [
                 [point1.x],
@@ -62,16 +76,15 @@ class MyDrawing extends Drawing {
                     vector2 = this.multiplication(this.orthnM, vector2);
                 } else {
                     vector1 = this.multiplication(this.perspectiveM, vector1);
-                    vector2 = this.multiplication(this.perspectiveM, vector2);   
+                    vector2 = this.multiplication(this.perspectiveM, vector2);
                 }
             }
-            
+            vector1 = this.multiplication(this.vpM, vector1);
+            vector2 = this.multiplication(this.vpM, vector2);
             point1 = {x:vector1[0][0], y:vector1[1][0], z:vector1[2][0]};
             point2 = {x:vector2[0][0], y:vector2[1][0], z:vector2[2][0]};
             this.line(point1, point2);
-            this.ctx.closePath();
         }
-        // this.render();
     }
 
     vertex(x: number, y: number, z: number) {
@@ -79,20 +92,21 @@ class MyDrawing extends Drawing {
     }
 
     perspective(fov: number, near: number, far: number) {
-        var top:number = Math.tan(fov/2)*near;
-        var right = top;
-        var left = -top;
-        var bottom = left;
+        var top:number = Math.tan((fov)/180*Math.PI/2)*near;
+        var aspectR:number = this.ctx.canvas.offsetWidth/this.ctx.canvas.offsetHeight
+        var right:number = top*aspectR;
+        var left:number = -top*aspectR;
+        var bottom:number = left;
         this.perspectiveM = [
-            [2*near/(right-left), 0, (right+left)/(right-left), 0],
-            [0, 2*near/(top-bottom),(top+bottom)/(bottom-top), 0],
-            [0, 0, (far+near)/(near-far), -2*near*far/(near-far)],
+            [2*near/(right-left), 0, (right+left)/(-right+left), 0],
+            [0, 2*near/(top-bottom), (top+bottom)/(bottom-top), 0],
+            [0, 0, (far+near)/(near-far), 2*near*far/(-near+far)],
             [0, 0, 1, 0]
         ];
         this.status = false;
     }
 
-    ortho( left: number, right: number, top: number, bottom: number, 
+    ortho(left: number, right: number, top: number, bottom: number, 
         near: number, far: number ) {
         this.orthnM = [
             [2/(right-left), 0, 0, -(right+left)/(right-left)],
@@ -122,7 +136,7 @@ class MyDrawing extends Drawing {
             [0, 0, 1, z],
             [0, 0, 0, 1]
         ];
-        this.multiplication(this.ctm, trans);
+        this.ctm = this.multiplication(this.ctm, trans);
     }
     
     // mutiply the current matrix by the scale
@@ -133,8 +147,8 @@ class MyDrawing extends Drawing {
             [0, y, 0, 0],
             [0, 0, z, 0],
             [0, 0, 0, 1]
-        ];
-        this.multiplication(this.ctm, trans);
+        ]
+        this.ctm = this.multiplication(this.ctm, trans);
     }
     
     // mutiply the current matrix by the rotation
@@ -147,7 +161,7 @@ class MyDrawing extends Drawing {
             [0, Math.sin(radius), Math.cos(radius), 0],
             [0, 0, 0, 1]
         ];
-        this.multiplication(this.ctm, trans);
+        this.ctm = this.multiplication(this.ctm, trans);
     }
     
     // mutiply the current matrix by the rotation
@@ -205,7 +219,7 @@ class MyDrawing extends Drawing {
                 var sum:number = given1[index1][0] * given[0][index2] + given1[index1][1] * given[1][index2] 
                 +given1[index1][2] * given[2][index2] +given1[index1][3] * given[3][index2];
 
-                result[index1].push(sum);
+                result[index1][index2] = sum;
             }
         }
         return result
