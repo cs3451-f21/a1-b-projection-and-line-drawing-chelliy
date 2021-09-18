@@ -74,15 +74,21 @@ class MyDrawing extends Drawing {
                 if (this.status) {
                     vector1 = this.multiplication(this.orthnM, vector1);
                     vector2 = this.multiplication(this.orthnM, vector2);
+                    vector1 = this.multiplication(this.vpM, vector1);
+                    vector2 = this.multiplication(this.vpM, vector2);
+                    point1 = {x:vector1[0][0], y:vector1[1][0], z:vector1[2][0]};
+                    point2 = {x:vector2[0][0], y:vector2[1][0], z:vector2[2][0]};
                 } else {
                     vector1 = this.multiplication(this.perspectiveM, vector1);
                     vector2 = this.multiplication(this.perspectiveM, vector2);
+                    vector1 = this.multiplication(this.vpM, vector1);
+                    vector2 = this.multiplication(this.vpM, vector2);
+                    var w1:number = vector1[3][0]
+                    var w2:number = vector2[3][0]
+                    point1 = {x:vector1[0][0]/w1, y:vector1[1][0]/w1, z:vector1[2][0]/w1};
+                    point2 = {x:vector2[0][0]/w2, y:vector2[1][0]/w2, z:vector2[2][0]/w2};
                 }
             }
-            vector1 = this.multiplication(this.vpM, vector1);
-            vector2 = this.multiplication(this.vpM, vector2);
-            point1 = {x:vector1[0][0], y:vector1[1][0], z:vector1[2][0]};
-            point2 = {x:vector2[0][0], y:vector2[1][0], z:vector2[2][0]};
             this.line(point1, point2);
         }
     }
@@ -92,11 +98,17 @@ class MyDrawing extends Drawing {
     }
 
     perspective(fov: number, near: number, far: number) {
+        
         var top:number = Math.tan((fov)/180*Math.PI/2)*near;
-        var aspectR:number = this.ctx.canvas.offsetWidth/this.ctx.canvas.offsetHeight
+        var bottom:number = -top;
+        if (top < bottom) {
+            top = -top
+            bottom = -bottom
+        }
+        var aspectR:number = this.ctx.canvas.width/this.ctx.canvas.height
         var right:number = top*aspectR;
         var left:number = -top*aspectR;
-        var bottom:number = left;
+
         this.perspectiveM = [
             [2*near/(right-left), 0, (right+left)/(-right+left), 0],
             [0, 2*near/(top-bottom), (top+bottom)/(bottom-top), 0],

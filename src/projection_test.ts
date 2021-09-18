@@ -385,7 +385,24 @@ function Circle(dr: Drawing)
 
 // you should write this
 function persp_initials(dr: Drawing) {
+  dr.initMatrix();
+  dr.perspective (40.0, -10.0, -100.0);
 
+  // dr.translate (0.5, -0.1, -2.0);
+  dr.scale(.1,.1,.1)
+
+  dr.vertex (-1.0, -1.0,  1.0);
+  dr.vertex (-1.0,  1.0,  1.0);
+
+  dr.vertex (-1.0,  1.0,  1.0);
+  dr.vertex ( 1.0,  1.0,  1.0);
+
+  dr.vertex ( 1.0,  1.0,  1.0);
+  dr.vertex ( 1.0, -1.0,  1.0);
+
+  dr.vertex ( 1.0, -1.0,  1.0);
+  dr.vertex (-1.0, -1.0,  1.0);
+  dr.endShape()
 }
 
 export {init_tests, draw_tests}
